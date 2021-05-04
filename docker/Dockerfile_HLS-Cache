@@ -1,0 +1,20 @@
+FROM ubuntu:18.04
+
+RUN apt-get update && \
+    apt-get install -y nano nginx
+
+RUN groupadd  nginx \
+    && useradd -m -d  /var/cache/nginx -s /sbin/nologin -g nginx nginx \
+    && mkdir -p /var/log/nginx \
+    && touch /var/log/nginx/access.log /var/log/nginx/error.log \
+    && chown nginx: /var/log/nginx/access.log /var/log/nginx/error.log \
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log
+
+COPY cache.conf /etc/nginx/nginx.conf
+
+EXPOSE 8080
+
+STOPSIGNAL SIGTERM
+
+CMD ["nginx", "-g", "daemon off;"]
