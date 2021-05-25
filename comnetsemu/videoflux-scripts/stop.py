@@ -40,8 +40,8 @@ if __name__ == "__main__":
     mgr = VNFManager(net)
 
     try:
-        mgr.removeContainer("counter_server_h2")
-        mgr.removeContainer("counter_server_h3")
+        mgr.removeContainer("streaming_server")
+        mgr.removeContainer("cache_server_cache1")
     except Exception as e:
         print(e)
     finally:

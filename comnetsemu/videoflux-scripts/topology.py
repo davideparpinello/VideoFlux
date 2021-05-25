@@ -171,4 +171,6 @@ if __name__ == "__main__":
     
 
     if not AUTOTEST_MODE:
+        spawnXtermDocker("streaming_server")
+        spawnXtermDocker("cache_server_cache1")
         CLI(net)
