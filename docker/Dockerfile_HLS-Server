@@ -50,10 +50,10 @@ RUN groupadd  nginx \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && apt-get update \
-    && apt-get install -y ffmpeg build-essential zlib1g zlib1g-dev libssl-dev
+    && apt-get install -y ffmpeg build-essential zlib1g zlib1g-dev libssl-dev nano x11-apps
 
-COPY ../nginx-conf/server.conf /etc/nginx/nginx.conf
-COPY ../docker/startup-server.sh /root/startup.sh
+COPY nginx-conf/server.conf /etc/nginx/nginx.conf
+COPY docker/startup-server.sh /root/startup.sh
 RUN chmod +x /root/startup.sh
 
 EXPOSE 8080

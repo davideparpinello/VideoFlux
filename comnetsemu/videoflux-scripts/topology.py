@@ -11,7 +11,7 @@ import time
 
 from subprocess import check_output
 
-from comnetsemu.cli import CLI
+from comnetsemu.cli import CLI, spawnXtermDocker
 from comnetsemu.net import Containernet, VNFManager
 from mininet.link import TCLink
 from mininet.log import info, setLogLevel
@@ -65,12 +65,12 @@ if __name__ == "__main__":
         docker_args={"hostname": "cache2"},
     )
 
-    info("*** Creating host\n")
-    host = net.addDockerHost(
-        "host",
+    info("*** Creating client\n")
+    client = net.addDockerHost(
+        "client",
         dimage="dev_test",
         ip="10.0.0.13/24",
-        docker_args={"hostname": "host", "pid_mode": "host"},
+        docker_args={"hostname": "client", "pid_mode": "host"},
     )
 
     info("*** Adding switch and links\n")
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # Add the interfaces for service traffic.
     net.addLinkNamedIfce(s1, cache1, bw=1000, delay="1ms")
     net.addLinkNamedIfce(s1, cache2, bw=1000, delay="1ms")
-    net.addLinkNamedIfce(s1, host, bw=1000, delay="1ms")
+    net.addLinkNamedIfce(s1, client, bw=1000, delay="1ms")
     # Add the interface for caches internal traffic.
     net.addLink(
         s1,
@@ -104,14 +104,14 @@ if __name__ == "__main__":
     s1_server_port_num = get_ofport("s1-server")
     s1_cache1_port_num = get_ofport("s1-cache1")
     s1_cache2_port_num = get_ofport("s1-cache2")
-    s1_host_port_num = get_ofport("s1-host")
+    s1_client_port_num = get_ofport("s1-client")
     cache1_mac = cache1.MAC(intf="cache1-s1")
     cache2_mac = cache2.MAC(intf="cache2-s1")
-    host_mac = host.MAC(intf="host-s1")
+    client_mac = client.MAC(intf="client-s1")
 
     cache1.setMAC("00:00:00:00:00:12", intf="cache1-s1")
     cache2.setMAC("00:00:00:00:00:12", intf="cache2-s1")
-    host.setMAC("00:00:00:00:00:13", intf="host-s1")
+    client.setMAC("00:00:00:00:00:13", intf="client-s1")
 
     info("*** Use the subnet 192.168.0.0/24 for internal traffic between cache1 and cache2.\n")
     print("- Internal IP of cache1: 192.168.0.12")
@@ -168,9 +168,31 @@ if __name__ == "__main__":
     )
     time.sleep(3)
 
+    info("*** Deploy test container on client.\n")
+    test_client = mgr.addContainer(
+        "test_client",
+        "client",
+        "davideparpi/videoflux-test-client",
+        ""
+    )
+    time.sleep(3)
+
     
 
     if not AUTOTEST_MODE:
         spawnXtermDocker("streaming_server")
         spawnXtermDocker("cache_server_cache1")
         CLI(net)
+
+
+    try:
+        mgr.removeContainer("streaming_server")
+        mgr.removeContainer("cache_server_cache1")
+        mgr.removeContainer("cache_server_cache2")
+        mgr.removeContainer("test_client")
+    except Exception as e:
+        print(e)
+    finally:
+        net.stop()
+        mgr.stop()
+
