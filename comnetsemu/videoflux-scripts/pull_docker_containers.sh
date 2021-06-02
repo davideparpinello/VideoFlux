@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo "Pulling docker containers from Docker hub..."
-docker pull davideparpi/nginx-hls-cache
-docker pull davideparpi/nginx-rtmp-server
-docker pull davideparpi/videoflux-test-client
+sudo docker pull davideparpi/nginx-hls-cache
+sudo docker pull davideparpi/nginx-rtmp-server
+sudo docker pull davideparpi/videoflux-test-client
 
-docker image prune
+sudo docker image prune

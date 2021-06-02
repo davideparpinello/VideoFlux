@@ -105,10 +105,12 @@ if __name__ == "__main__":
     s1_cache1_port_num = get_ofport("s1-cache1")
     s1_cache2_port_num = get_ofport("s1-cache2")
     s1_client_port_num = get_ofport("s1-client")
+    server_mac = server.MAC(intf="server-s1")
     cache1_mac = cache1.MAC(intf="cache1-s1")
     cache2_mac = cache2.MAC(intf="cache2-s1")
     client_mac = client.MAC(intf="client-s1")
 
+    server.setMAC("00:00:00:00:00:11", intf="server-s1")
     cache1.setMAC("00:00:00:00:00:12", intf="cache1-s1")
     cache2.setMAC("00:00:00:00:00:12", intf="cache2-s1")
     client.setMAC("00:00:00:00:00:13", intf="client-s1")
@@ -123,14 +125,22 @@ if __name__ == "__main__":
     # INFO: For the simplicity, OpenFlow rules are managed directly via
     # `ovs-ofctl` utility provided by the OvS.
     # For realistic setup, switches should be managed by a remote controller.
-    info("*** Add flow to forward traffic from server to cache1 to switch s1.\n")
+    info("*** Add flow to forward traffic from h1 to h2 to switch s1.\n")
     check_output(
         shlex.split(
             'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_server_port_num, s1_cache1_port_num
+                s1_cache1_port_num, s1_cache2_port_num
             )
         )
     )
+    check_output(
+        shlex.split(
+            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
+                s1_cache2_port_num, s1_cache1_port_num
+            )
+        )
+    )
+
     check_output(
         shlex.split(
             'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
@@ -141,7 +151,21 @@ if __name__ == "__main__":
     check_output(
         shlex.split(
             'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_cache2_port_num, s1_cache2_port_num
+                s1_server_port_num, s1_cache1_port_num
+            )
+        )
+    )
+    check_output(
+        shlex.split(
+            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
+                s1_client_port_num, s1_cache1_port_num
+            )
+        )
+    )
+    check_output(
+        shlex.split(
+            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
+                s1_cache1_port_num, s1_client_port_num
             )
         )
     )
@@ -182,6 +206,7 @@ if __name__ == "__main__":
     if not AUTOTEST_MODE:
         spawnXtermDocker("streaming_server")
         spawnXtermDocker("cache_server_cache1")
+        spawnXtermDocker("test_client")
         CLI(net)
 
 
