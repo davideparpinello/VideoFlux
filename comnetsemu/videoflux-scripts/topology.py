@@ -126,49 +126,16 @@ if __name__ == "__main__":
     # `ovs-ofctl` utility provided by the OvS.
     # For realistic setup, switches should be managed by a remote controller.
     info("*** Add flow to forward traffic from h1 to h2 to switch s1.\n")
+    
     check_output(
         shlex.split(
-            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_cache1_port_num, s1_cache2_port_num
-            )
-        )
-    )
-    check_output(
-        shlex.split(
-            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_cache2_port_num, s1_cache1_port_num
+            'ovs-ofctl add-flow s1 "nw_src={},nw_dst={}",actions=normal'.format(
+                '10.0.0.0/24', '10.0.0.0/24'
             )
         )
     )
 
-    check_output(
-        shlex.split(
-            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_cache1_port_num, s1_server_port_num
-            )
-        )
-    )
-    check_output(
-        shlex.split(
-            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_server_port_num, s1_cache1_port_num
-            )
-        )
-    )
-    check_output(
-        shlex.split(
-            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_client_port_num, s1_cache1_port_num
-            )
-        )
-    )
-    check_output(
-        shlex.split(
-            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
-                s1_cache1_port_num, s1_client_port_num
-            )
-        )
-    )
+    
 
     info("*** server ping 10.0.0.12 (cache) with 3 packets: \n")
     ret = cache1.cmd("ping -c 3 10.0.0.12")
