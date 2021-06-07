@@ -127,10 +127,20 @@ if __name__ == "__main__":
     # For realistic setup, switches should be managed by a remote controller.
     info("*** Add flow to forward traffic from h1 to h2 to switch s1.\n")
     
+    
+
     check_output(
         shlex.split(
-            'ovs-ofctl add-flow s1 "nw_src={},nw_dst={}",actions=normal'.format(
-                '10.0.0.0/24', '10.0.0.0/24'
+            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
+                s1_client_port_num, s1_cache1_port_num
+            )
+        )
+    )
+
+    check_output(
+        shlex.split(
+            'ovs-ofctl add-flow s1 "in_port={}, actions=output:{}"'.format(
+                s1_server_port_num, s1_cache1_port_num
             )
         )
     )
@@ -174,6 +184,101 @@ if __name__ == "__main__":
         spawnXtermDocker("streaming_server")
         spawnXtermDocker("cache_server_cache1")
         spawnXtermDocker("test_client")
+
+    info("*** Starting migration from cache1 to cache2 in 60 seconds...\n")
+    time.sleep(60)
+    info("*** Deploy cache service on cache2.\n")
+    cache_server_cache2 = mgr.addContainer(
+        "cache_server_cache2",
+        "cache2",
+        "davideparpi/nginx-hls-cache",
+        ""
+    )
+    if not AUTOTEST_MODE:
+        spawnXtermDocker("cache_server_cache2")
+
+    info("*** Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
+    check_output(
+        shlex.split(
+            'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                s1_client_port_num, s1_cache2_port_num
+            )
+        )
+    )
+    check_output(
+        shlex.split(
+            'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                s1_server_port_num, s1_cache2_port_num
+            )
+        )
+    )
+
+    time.sleep(3)
+    mgr.removeContainer("cache_server_cache1")
+
+    info("*** Starting migration from cache2 to cache1 in 35 seconds...\n")
+    time.sleep(35)
+    info("*** Deploy cache service on cache1.\n")
+    cache_server_cache1 = mgr.addContainer(
+        "cache_server_cache1",
+        "cache1",
+        "davideparpi/nginx-hls-cache",
+        ""
+    )
+    if not AUTOTEST_MODE:
+        spawnXtermDocker("cache_server_cache1")
+
+    info("*** Mod the added flow to forward traffic from client to cache1 to switch s1.\n")
+    check_output(
+        shlex.split(
+            'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                s1_client_port_num, s1_cache1_port_num
+            )
+        )
+    )
+    check_output(
+        shlex.split(
+            'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                s1_server_port_num, s1_cache1_port_num
+            )
+        )
+    )
+
+    time.sleep(3)
+    mgr.removeContainer("cache_server_cache2")
+
+    info("*** Starting migration from cache1 to cache2 in 35 seconds...\n")
+    time.sleep(35)
+    info("*** Deploy cache service on cache2.\n")
+    cache_server_cache2 = mgr.addContainer(
+        "cache_server_cache2",
+        "cache2",
+        "davideparpi/nginx-hls-cache",
+        ""
+    )
+    if not AUTOTEST_MODE:
+        spawnXtermDocker("cache_server_cache2")
+
+    info("*** Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
+    check_output(
+        shlex.split(
+            'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                s1_client_port_num, s1_cache2_port_num
+            )
+        )
+    )
+    check_output(
+        shlex.split(
+            'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                s1_server_port_num, s1_cache2_port_num
+            )
+        )
+    )
+
+    time.sleep(3)
+    mgr.removeContainer("cache_server_cache1")
+
+    if not AUTOTEST_MODE:
         CLI(net)
 
 
