@@ -16,6 +16,7 @@ from comnetsemu.net import Containernet, VNFManager
 from mininet.link import TCLink
 from mininet.log import info, setLogLevel
 from mininet.node import Controller
+from datetime import datetime
 
 
 def get_ofport(ifce: str):
@@ -185,9 +186,9 @@ if __name__ == "__main__":
         spawnXtermDocker("cache_server_cache1")
         spawnXtermDocker("test_client")
 
-    info("*** Starting migration from cache1 to cache2 in 60 seconds...\n")
+    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Starting migration from cache1 to cache2 in 60 seconds...\n")
     time.sleep(60)
-    info("*** Deploy cache service on cache2.\n")
+    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Deploy cache service on cache2.\n")
     cache_server_cache2 = mgr.addContainer(
         "cache_server_cache2",
         "cache2",
@@ -197,7 +198,7 @@ if __name__ == "__main__":
     if not AUTOTEST_MODE:
         spawnXtermDocker("cache_server_cache2")
 
-    info("*** Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
+    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
     check_output(
         shlex.split(
             'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
@@ -218,7 +219,7 @@ if __name__ == "__main__":
 
     info("*** Starting migration from cache2 to cache1 in 35 seconds...\n")
     time.sleep(35)
-    info("*** Deploy cache service on cache1.\n")
+    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Deploy cache service on cache1.\n")
     cache_server_cache1 = mgr.addContainer(
         "cache_server_cache1",
         "cache1",
@@ -228,7 +229,7 @@ if __name__ == "__main__":
     if not AUTOTEST_MODE:
         spawnXtermDocker("cache_server_cache1")
 
-    info("*** Mod the added flow to forward traffic from client to cache1 to switch s1.\n")
+    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Mod the added flow to forward traffic from client to cache1 to switch s1.\n")
     check_output(
         shlex.split(
             'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
@@ -249,7 +250,7 @@ if __name__ == "__main__":
 
     info("*** Starting migration from cache1 to cache2 in 35 seconds...\n")
     time.sleep(35)
-    info("*** Deploy cache service on cache2.\n")
+    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Deploy cache service on cache2.\n")
     cache_server_cache2 = mgr.addContainer(
         "cache_server_cache2",
         "cache2",
@@ -259,7 +260,7 @@ if __name__ == "__main__":
     if not AUTOTEST_MODE:
         spawnXtermDocker("cache_server_cache2")
 
-    info("*** Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
+    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
     check_output(
         shlex.split(
             'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(

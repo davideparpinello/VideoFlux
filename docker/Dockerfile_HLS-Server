@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get install -y curl git libpcre3 libpcre3-dev zlib1g zlib1g-dev build-essential cmake wget libssl-dev;
 
 RUN curl -O https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz && \
-    wget -O stream.mp4 https://www.dprojects.it/thesis/BBB-short.mp4 && \
+    wget -O stream.mp4 https://dprojects.it/thesis/BBB-short.mp4 && \
     tar xvzf nginx-$NGINX_VERSION.tar.gz && \
     git clone https://github.com/arut/nginx-rtmp-module.git && \
     cd nginx-$NGINX_VERSION && \

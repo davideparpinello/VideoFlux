@@ -42,6 +42,8 @@ if __name__ == "__main__":
     try:
         mgr.removeContainer("streaming_server")
         mgr.removeContainer("cache_server_cache1")
+        mgr.removeContainer("cache_server_cache2")
+        mgr.removeContainer("test_client")
     except Exception as e:
         print(e)
     finally:
