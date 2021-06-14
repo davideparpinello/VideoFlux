@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-About: Basic example of service (running inside a APPContainer) migration.
+About: Simple topology of service migration using Appcontainer
 """
 
 import os
@@ -30,6 +30,15 @@ def get_ofport(ifce: str):
         .strip()
     )
 
+def log_message(message: str):
+    """Print a log message with a timestamp.
+
+    :param message (str): string containing the message.
+    """
+
+    info("*** ", (datetime.now()).strftime("%H:%M:%S") ,": ", message ,"\n")
+    return
+
 
 if __name__ == "__main__":
 
@@ -41,10 +50,10 @@ if __name__ == "__main__":
     net = Containernet(controller=Controller, link=TCLink, xterms=False)
     mgr = VNFManager(net)
 
-    info("*** Add the default controller\n")
+    log_message("Add the default controller")
     net.addController("c0")
 
-    info("*** Creating server\n")
+    log_message("Creating server")
     server = net.addDockerHost(
         "server",
         dimage="dev_test",
@@ -52,7 +61,7 @@ if __name__ == "__main__":
         docker_args={"hostname": "server"},
     )
     
-    info("*** Creating caches\n")
+    log_message("Creating caches")
     cache1 = net.addDockerHost(
         "cache1",
         dimage="dev_test",
@@ -66,7 +75,7 @@ if __name__ == "__main__":
         docker_args={"hostname": "cache2"},
     )
 
-    info("*** Creating client\n")
+    log_message("Creating client")
     client = net.addDockerHost(
         "client",
         dimage="dev_test",
@@ -74,32 +83,15 @@ if __name__ == "__main__":
         docker_args={"hostname": "client", "pid_mode": "host"},
     )
 
-    info("*** Adding switch and links\n")
+    log_message("Adding switch and links\n")
     s1 = net.addSwitch("s1")
     net.addLinkNamedIfce(s1, server, bw=1000, delay="1ms")
     # Add the interfaces for service traffic.
     net.addLinkNamedIfce(s1, cache1, bw=1000, delay="1ms")
     net.addLinkNamedIfce(s1, cache2, bw=1000, delay="1ms")
     net.addLinkNamedIfce(s1, client, bw=1000, delay="1ms")
-    # Add the interface for caches internal traffic.
-    net.addLink(
-        s1,
-        cache1,
-        bw=1000,
-        delay="1ms",
-        intfName1="s1-cache1-int",
-        intfName2="cache1-s1-int",
-    )
-    net.addLink(
-        s1,
-        cache2,
-        bw=1000,
-        delay="1ms",
-        intfName1="s1-cache2-int",
-        intfName2="cache2-s1-int",
-    )
 
-    info("\n*** Starting network\n")
+    log_message("\nStarting network")
     net.start()
 
     s1_server_port_num = get_ofport("s1-server")
@@ -116,19 +108,10 @@ if __name__ == "__main__":
     cache2.setMAC("00:00:00:00:00:12", intf="cache2-s1")
     client.setMAC("00:00:00:00:00:13", intf="client-s1")
 
-    info("*** Use the subnet 192.168.0.0/24 for internal traffic between cache1 and cache2.\n")
-    print("- Internal IP of cache1: 192.168.0.12")
-    print("- Internal IP of cache2: 192.168.0.13")
-    cache1.cmd("ip addr add 192.168.0.12/24 dev cache1-s1-int")
-    cache2.cmd("ip addr add 192.168.0.13/24 dev cache2-s1-int")
-    cache1.cmd("ping -c 3 192.168.0.13")
-
     # INFO: For the simplicity, OpenFlow rules are managed directly via
     # `ovs-ofctl` utility provided by the OvS.
     # For realistic setup, switches should be managed by a remote controller.
-    info("*** Add flow to forward traffic from h1 to h2 to switch s1.\n")
-    
-    
+    log_message("Add flow to forward traffic from h1 to h2 to switch s1.")
 
     check_output(
         shlex.split(
@@ -148,47 +131,46 @@ if __name__ == "__main__":
 
     
 
-    info("*** server ping 10.0.0.12 (cache) with 3 packets: \n")
+    log_message("server ping 10.0.0.12 (cache) with 3 packets:")
     ret = cache1.cmd("ping -c 3 10.0.0.12")
     print(ret)
 
-    info("*** Deploy streaming service on server.\n")
+    time.sleep(3)
+
+    log_message("Deploy streaming service on server.")
     streaming_server = mgr.addContainer(
         "streaming_server",
         "server",
         "davideparpi/nginx-rtmp-server",
         "",
     )
-    time.sleep(3)
-
-    info("*** Deploy cache service on cache1.\n")
+    log_message("Deploy cache service on cache1.")
     cache_server_cache1 = mgr.addContainer(
         "cache_server_cache1",
         "cache1",
         "davideparpi/nginx-hls-cache",
         ""
     )
-    time.sleep(3)
+    log_message("Deploy test container on client.")
 
-    info("*** Deploy test container on client.\n")
+    env_str = "DISPLAY=" + os.environ['DISPLAY'] # The X11 display IP will be the same of the Virtual Machine
+    
     test_client = mgr.addContainer(
         "test_client",
         "client",
         "davideparpi/videoflux-test-client",
-        ""
-    )
-    time.sleep(3)
-
-    
+        "",
+        docker_args={"environment": [env_str]}
+    )    
 
     if not AUTOTEST_MODE:
         spawnXtermDocker("streaming_server")
         spawnXtermDocker("cache_server_cache1")
         spawnXtermDocker("test_client")
 
-    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Starting migration from cache1 to cache2 in 60 seconds...\n")
+    log_message("Starting migration from cache1 to cache2 in 60 seconds...")
     time.sleep(60)
-    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Deploy cache service on cache2.\n")
+    log_message("Deploy cache service on cache2.")
     cache_server_cache2 = mgr.addContainer(
         "cache_server_cache2",
         "cache2",
@@ -198,7 +180,9 @@ if __name__ == "__main__":
     if not AUTOTEST_MODE:
         spawnXtermDocker("cache_server_cache2")
 
-    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
+    
+
+    log_message("Mod the added flow to forward traffic from client to cache2 to switch s1.")
     check_output(
         shlex.split(
             'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
@@ -217,9 +201,9 @@ if __name__ == "__main__":
     time.sleep(3)
     mgr.removeContainer("cache_server_cache1")
 
-    info("*** Starting migration from cache2 to cache1 in 35 seconds...\n")
+    log_message("Starting migration from cache2 to cache1 in 35 seconds...")
     time.sleep(35)
-    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Deploy cache service on cache1.\n")
+    log_message("Deploy cache service on cache1.")
     cache_server_cache1 = mgr.addContainer(
         "cache_server_cache1",
         "cache1",
@@ -229,7 +213,7 @@ if __name__ == "__main__":
     if not AUTOTEST_MODE:
         spawnXtermDocker("cache_server_cache1")
 
-    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Mod the added flow to forward traffic from client to cache1 to switch s1.\n")
+    log_message("Mod the added flow to forward traffic from client to cache1 to switch s1.")
     check_output(
         shlex.split(
             'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
@@ -248,9 +232,9 @@ if __name__ == "__main__":
     time.sleep(3)
     mgr.removeContainer("cache_server_cache2")
 
-    info("*** Starting migration from cache1 to cache2 in 35 seconds...\n")
+    log_message("Starting migration from cache1 to cache2 in 35 seconds...")
     time.sleep(35)
-    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Deploy cache service on cache2.\n")
+    log_message("Deploy cache service on cache2.")
     cache_server_cache2 = mgr.addContainer(
         "cache_server_cache2",
         "cache2",
@@ -260,7 +244,7 @@ if __name__ == "__main__":
     if not AUTOTEST_MODE:
         spawnXtermDocker("cache_server_cache2")
 
-    info("***", (datetime.now()).strftime("%H:%M:%S") ,": Mod the added flow to forward traffic from client to cache2 to switch s1.\n")
+    log_message("Mod the added flow to forward traffic from client to cache2 to switch s1.")
     check_output(
         shlex.split(
             'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
