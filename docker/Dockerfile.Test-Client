@@ -1,7 +1,17 @@
 FROM ubuntu:18.04
 
 RUN apt-get update
-RUN apt-get install -y x11-apps vlc iputils-ping chromium-browser
+RUN apt-get install -y x11-apps vlc iputils-ping chromium-browser openjdk-8-jdk wget unzip
 RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
+
+RUN wget https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.3.zip
+RUN unzip apache-jmeter-5.3.zip
+RUN wget -O plugins-manager.jar https://jmeter-plugins.org/get/
+RUN mv plugins-manager.jar apache-jmeter-5.3/lib/ext/plugins-manager.jar
+RUN wget -O cmdrunner-2.2.jar http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar
+RUN mv cmdrunner-2.2.jar apache-jmeter-5.3/lib/cmdrunner-2.2.jar
+RUN java -cp apache-jmeter-5.3/lib/ext/plugins-manager.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
+RUN ./apache-jmeter-5.3/bin/PluginsManagerCMD.sh install bzm-hls,jpgc-graphs-additional,jpgc-graphs-basic,jpgc-graphs-composite
+COPY docker/hls-graphs.jmx /apache-jmeter-5.3/bin/hls-graphs.jmx
 
 STOPSIGNAL SIGTERM
