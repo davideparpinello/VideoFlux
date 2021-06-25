@@ -213,67 +213,81 @@ if __name__ == "__main__":
         time.sleep(3)
         mgr.removeContainer("cache_server_cache1")
 
-        log_message("Starting migration from cache2 to cache1 in 30 seconds...")
-        time.sleep(30)
-        log_message("Deploy cache service on cache1.")
-        cache_server_cache1 = mgr.addContainer(
-            "cache_server_cache1",
-            "cache1",
-            "davideparpi/nginx-hls-cache",
-            ""
-        )
-        if not AUTOTEST_MODE:
-            spawnXtermDocker("cache_server_cache1")
+        restart = 0
 
-        log_message("Mod the added flow to forward traffic from client to cache1 to switch s1.")
-        check_output(
-            shlex.split(
-                'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
-                    s1_client_port_num, s1_cache1_port_num
+        if(restart == 0):
+
+            log_message("Starting migration from cache2 to cache1 in 30 seconds...")
+            time.sleep(30)
+            log_message("Deploy cache service on cache1.")
+            cache_server_cache1 = mgr.addContainer(
+                "cache_server_cache1",
+                "cache1",
+                "davideparpi/nginx-hls-cache",
+                ""
+            )
+            if not AUTOTEST_MODE:
+                spawnXtermDocker("cache_server_cache1")
+
+            log_message("Mod the added flow to forward traffic from client to cache1 to switch s1.")
+            check_output(
+                shlex.split(
+                    'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                        s1_client_port_num, s1_cache1_port_num
+                    )
                 )
             )
-        )
-        check_output(
-            shlex.split(
-                'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
-                    s1_server_port_num, s1_cache1_port_num
+            check_output(
+                shlex.split(
+                    'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                        s1_server_port_num, s1_cache1_port_num
+                    )
                 )
             )
-        )
 
-        time.sleep(3)
-        mgr.removeContainer("cache_server_cache2")
+            time.sleep(3)
+            mgr.removeContainer("cache_server_cache2")
 
-        log_message("Starting migration from cache1 to cache2 in 30 seconds...")
-        time.sleep(30)
-        log_message("Deploy cache service on cache2.")
-        cache_server_cache2 = mgr.addContainer(
-            "cache_server_cache2",
-            "cache2",
-            "davideparpi/nginx-hls-cache",
-            ""
-        )
-        if not AUTOTEST_MODE:
-            spawnXtermDocker("cache_server_cache2")
+            log_message("Starting migration from cache1 to cache2 in 30 seconds...")
+            time.sleep(30)
+            log_message("Deploy cache service on cache2.")
+            cache_server_cache2 = mgr.addContainer(
+                "cache_server_cache2",
+                "cache2",
+                "davideparpi/nginx-hls-cache",
+                ""
+            )
+            if not AUTOTEST_MODE:
+                spawnXtermDocker("cache_server_cache2")
 
-        log_message("Mod the added flow to forward traffic from client to cache2 to switch s1.")
-        check_output(
-            shlex.split(
-                'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
-                    s1_client_port_num, s1_cache2_port_num
+            log_message("Mod the added flow to forward traffic from client to cache2 to switch s1.")
+            check_output(
+                shlex.split(
+                    'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                        s1_client_port_num, s1_cache2_port_num
+                    )
                 )
             )
-        )
-        check_output(
-            shlex.split(
-                'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
-                    s1_server_port_num, s1_cache2_port_num
+            check_output(
+                shlex.split(
+                    'ovs-ofctl mod-flows s1 "in_port={}, actions=output:{}"'.format(
+                        s1_server_port_num, s1_cache2_port_num
+                    )
                 )
             )
-        )
 
-        time.sleep(3)
-        mgr.removeContainer("cache_server_cache1")
+            time.sleep(3)
+            mgr.removeContainer("cache_server_cache1")
+
+            restart = 2
+            while restart not in range(0,2):
+                print("\nDo you want to restart the migration?")
+                print("----------------------------\n")
+                print("0) restart the migration")
+                print("1) stop and go to Mininet CLI\n")
+                restart = int(input("Enter your choice: "))
+                if(restart not in range(0,2)):
+                    print("\nYour choiche is not correct. Retry\n")
 
     if not AUTOTEST_MODE:
         CLI(net)
