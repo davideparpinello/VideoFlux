@@ -182,7 +182,9 @@ if __name__ == "__main__":
 
         log_message("Starting migration from cache1 to cache2 in 30 seconds...")
         time.sleep(30)
+        
         log_message("Deploy cache service on cache2.")
+        start_time = time.time()
         cache_server_cache2 = mgr.addContainer(
             "cache_server_cache2",
             "cache2",
@@ -191,7 +193,7 @@ if __name__ == "__main__":
         )
         if not AUTOTEST_MODE:
             spawnXtermDocker("cache_server_cache2")
-
+        
         
 
         log_message("Mod the added flow to forward traffic from client to cache2 to switch s1.")
@@ -209,6 +211,7 @@ if __name__ == "__main__":
                 )
             )
         )
+        print("--- Migration took %s seconds ---" % (time.time() - start_time))
 
         time.sleep(3)
         mgr.removeContainer("cache_server_cache1")
@@ -220,6 +223,7 @@ if __name__ == "__main__":
             log_message("Starting migration from cache2 to cache1 in 30 seconds...")
             time.sleep(30)
             log_message("Deploy cache service on cache1.")
+            start_time = time.time()
             cache_server_cache1 = mgr.addContainer(
                 "cache_server_cache1",
                 "cache1",
@@ -244,6 +248,7 @@ if __name__ == "__main__":
                     )
                 )
             )
+            print("--- Migration took %s seconds ---" % (time.time() - start_time))
 
             time.sleep(3)
             mgr.removeContainer("cache_server_cache2")
@@ -251,6 +256,7 @@ if __name__ == "__main__":
             log_message("Starting migration from cache1 to cache2 in 30 seconds...")
             time.sleep(30)
             log_message("Deploy cache service on cache2.")
+            start_time = time.time()
             cache_server_cache2 = mgr.addContainer(
                 "cache_server_cache2",
                 "cache2",
@@ -275,6 +281,7 @@ if __name__ == "__main__":
                     )
                 )
             )
+            print("--- Migration took %s seconds ---" % (time.time() - start_time))
 
             time.sleep(3)
             mgr.removeContainer("cache_server_cache1")
