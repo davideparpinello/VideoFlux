@@ -211,7 +211,11 @@ if __name__ == "__main__":
                 )
             )
         )
+        
         print("--- Migration took %s seconds ---" % (time.time() - start_time))
+        log_message("client ping 10.0.0.12 (cache) with 10 packets:")
+        ret = client.cmd("ping -c 10 10.0.0.12")
+        print(ret)
 
         time.sleep(3)
         mgr.removeContainer("cache_server_cache1")
@@ -248,7 +252,11 @@ if __name__ == "__main__":
                     )
                 )
             )
+            
             print("--- Migration took %s seconds ---" % (time.time() - start_time))
+            log_message("client ping 10.0.0.12 (cache) with 10 packets:")
+            ret = client.cmd("ping -c 10 10.0.0.12")
+            print(ret)
 
             time.sleep(3)
             mgr.removeContainer("cache_server_cache2")
@@ -281,7 +289,11 @@ if __name__ == "__main__":
                     )
                 )
             )
+            
             print("--- Migration took %s seconds ---" % (time.time() - start_time))
+            log_message("client ping 10.0.0.12 (cache) with 10 packets:")
+            ret = client.cmd("ping -c 10 10.0.0.12")
+            print(ret)
 
             time.sleep(3)
             mgr.removeContainer("cache_server_cache1")
