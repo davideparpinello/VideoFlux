@@ -141,14 +141,14 @@ if __name__ == "__main__":
     streaming_server = mgr.addContainer(
         "streaming_server",
         "server",
-        "davideparpi/nginx-rtmp-server",
+        "davideparpi/nginx-rtmp-server", # Modify with the correct container
         "",
     )
     log_message("Deploy cache service on cache1.")
     cache_server_cache1 = mgr.addContainer(
         "cache_server_cache1",
         "cache1",
-        "davideparpi/nginx-hls-cache",
+        "davideparpi/nginx-hls-cache", # Modify with the correct container
         ""
     )
     log_message("Deploy test container on client.")
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     test_client = mgr.addContainer(
         "test_client",
         "client",
-        "davideparpi/videoflux-test-client",
+        "davideparpi/videoflux-test-client", # Modify with the correct container
         "",
         docker_args={"environment": [env_str]}
     )    
