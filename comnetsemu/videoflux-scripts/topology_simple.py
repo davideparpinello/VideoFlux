@@ -222,7 +222,7 @@ if __name__ == "__main__":
 
         restart = 0
 
-        if(restart == 0):
+        while(restart == 0):
 
             log_message("Starting migration from cache2 to cache1 in 30 seconds...")
             time.sleep(30)
